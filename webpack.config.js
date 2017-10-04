@@ -1,25 +1,26 @@
-const webpack = require("webpack");
 const { join, resolve } = require('path')
+const webpack = require("webpack");
 const glob = require('glob')
-
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 
-const entries = {}
-glob.sync('./src/pages/**/app.js').forEach(path => {
-  let chunk = path.split('./src/pages/')[1].split('/app.js')[0]
-  entries[chunk] = path
+const chunk_names = {}
+glob.sync('./src/pages/**/app.js').forEach(path => {   // build out a chunk for
+  let chunk = path.split("/")[3]                       // each folder (page) under
+  chunk_names[chunk] = path                            // the pages directory
 })
 
+// don't directly assign to module.exports yet, as a plugin per
+// page will be added to the config later
 config = {
-  entry: entries,
+  entry: chunk_names,                                  // use the entry name
   output: {
     path: resolve(__dirname, 'dist/'),
     filename: "[name].js"
   },
   resolve: {
     extensions: ['.js', '.vue'],
-    alias: {
-      components: join(__dirname, '/src/components'),
+    alias: {                                           // allow components to be imported as
+      components: join(__dirname, '/src/components'),  // import SiteHeader from 'components/site_header'
     }
   },
   module: {
@@ -27,27 +28,26 @@ config = {
       {
         test: /\.vue$/,
         use: {
-          loader: 'vue-loader'
+          loader: 'vue-loader'                         // basic Vue loader
         }
       }
     ]
   },
-  plugins: []
+  plugins: []                                          // create empty array for next step
 }
 
-glob.sync('./src/pages/**/*.js').forEach(path => {
-  const chunk = path.split("/")[3]
-  console.log(chunk)
+// create a HtmlWebpackPlugin instance per page
+Object.keys(chunk_names).forEach(chunk => {
   const filename = chunk + '.html'
   const htmlConf = {
     filename: filename,
     template: 'templates/app.html',
     inject: 'body',
     hash: process.env.NODE_ENV === 'production',
-    chunks: ['vendors', chunk],
-    debug: true
+    chunks: ['vendors', chunk]
   }
-  config.plugins.push(new HtmlWebpackPlugin(htmlConf))
+  config.plugins.push(new HtmlWebpackPlugin(htmlConf)) // new plugin config per file
 })
 
+// finally, assign to module.exports
 module.exports = config
