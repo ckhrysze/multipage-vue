@@ -2,6 +2,7 @@ const { join, resolve } = require('path')
 const webpack = require("webpack");
 const glob = require('glob')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const { VueLoaderPlugin } = require('vue-loader')
 
 const chunk_names = {}
 glob.sync('./src/pages/**/app.js').forEach(path => {   // build out a chunk for
@@ -33,7 +34,9 @@ config = {
       }
     ]
   },
-  plugins: []                                          // create empty array for next step
+  plugins: [
+     new VueLoaderPlugin()
+  ]
 }
 
 // create a HtmlWebpackPlugin instance per page
