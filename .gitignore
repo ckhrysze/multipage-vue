@@ -19,3 +19,6 @@ dist/
 
 # env and setup files
 .envrc
+
+# asdf config
+.tool-versions
